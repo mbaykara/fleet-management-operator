@@ -1,0 +1,55 @@
+apiVersion: fleetmanagement.grafana.com/v1alpha1
+kind: Pipeline
+metadata:
+  labels:
+    app.kubernetes.io/name: fleet-management-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: otel-metrics-pipeline
+spec:
+  # Override with valid Alloy identifier (no hyphens)
+  name: otel_metrics_pipeline
+
+  # OpenTelemetry Collector configuration
+  contents: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      batch:
+        timeout: 10s
+        send_batch_size: 1024
+
+    exporters:
+      prometheusremotewrite:
+        endpoint: ${env:PROMETHEUS_URL}
+        auth:
+          authenticator: basicauth
+
+    extensions:
+      basicauth:
+        client_auth:
+          username: ${env:PROMETHEUS_USER}
+          password: ${env:PROMETHEUS_PASSWORD}
+
+    service:
+      extensions: [basicauth]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [prometheusremotewrite]
+
+  # Assign to collectors running OTEL
+  matchers:
+    - collector.type=otel
+    - environment=production
+
+  enabled: true
+
+  # Must specify OpenTelemetryCollector for OTEL config
+  configType: OpenTelemetryCollector

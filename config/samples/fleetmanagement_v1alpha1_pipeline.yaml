@@ -1,0 +1,44 @@
+apiVersion: fleetmanagement.grafana.com/v1alpha1
+kind: Pipeline
+metadata:
+  labels:
+    app.kubernetes.io/name: fleet-management-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: pipeline-sample
+spec:
+  # Override with valid Alloy identifier (no hyphens)
+  name: pipeline_sample
+
+  # Alloy configuration for Prometheus self-monitoring
+  contents: |
+    prometheus.exporter.self "alloy" { }
+
+    prometheus.scrape "alloy" {
+      targets    = prometheus.exporter.self.alloy.targets
+      forward_to = [prometheus.remote_write.grafanacloud.receiver]
+      scrape_interval = "60s"
+    }
+
+    prometheus.remote_write "grafanacloud" {
+      external_labels = {"collector_id" = constants.hostname}
+
+      endpoint {
+        url = env("PROMETHEUS_URL")
+
+        basic_auth {
+          username      = env("PROMETHEUS_USER")
+          password_file = "/etc/secrets/prometheus-password"
+        }
+      }
+    }
+
+  # Assign to Linux collectors in production
+  matchers:
+    - collector.os=linux
+    - environment=production
+
+  # Enable the pipeline
+  enabled: true
+
+  # Configuration type (Alloy or OpenTelemetryCollector)
+  configType: Alloy

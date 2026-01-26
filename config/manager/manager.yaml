@@ -63,7 +63,8 @@ spec:
         args:
           - --leader-elect
           - --health-probe-bind-address=:8081
-        image: fleet-management-operator:dev-v1.0.0
+        image: fleet-management-operator:dev-v1.0.1
+        imagePullPolicy: IfNotPresent
         name: manager
         env:
         - name: FLEET_MANAGEMENT_BASE_URL

@@ -243,7 +243,11 @@ func (r *PipelineReconciler) handleAPIError(ctx context.Context, pipeline *fleet
 
 		default:
 			// Other API errors - return for exponential backoff
-			log.Error(err, "Fleet Management API error", "statusCode", apiErr.StatusCode)
+			log.Error(err, "Fleet Management API error",
+				"statusCode", apiErr.StatusCode,
+				"operation", apiErr.Operation,
+				"pipelineID", pipeline.Status.ID,
+				"message", apiErr.Message)
 			return r.updateStatusError(ctx, pipeline, reasonSyncFailed, err)
 		}
 	}

@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: fleet-management-operator
-  newTag: dev-v1.0.0
+  newTag: dev-v1.0.1

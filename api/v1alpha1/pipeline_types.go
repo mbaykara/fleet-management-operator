@@ -35,6 +35,39 @@ const (
 	ConfigTypeOpenTelemetryCollector ConfigType = "OpenTelemetryCollector"
 )
 
+// SourceType represents the origin source of the pipeline
+// +kubebuilder:validation:Enum=Git;Terraform;Kubernetes;Unspecified
+type SourceType string
+
+const (
+	// SourceTypeGit indicates pipeline originated from Git repository
+	SourceTypeGit SourceType = "Git"
+
+	// SourceTypeTerraform indicates pipeline originated from Terraform
+	SourceTypeTerraform SourceType = "Terraform"
+
+	// SourceTypeKubernetes indicates pipeline originated from this Kubernetes operator
+	SourceTypeKubernetes SourceType = "Kubernetes"
+
+	// SourceTypeUnspecified indicates pipeline source is not specified
+	SourceTypeUnspecified SourceType = "Unspecified"
+)
+
+// PipelineSource defines the origin source of the pipeline
+type PipelineSource struct {
+	// Type specifies the source type (Git, Terraform, Kubernetes, Unspecified)
+	// +optional
+	// +kubebuilder:default=Kubernetes
+	Type SourceType `json:"type,omitempty"`
+
+	// Namespace provides additional context about the source
+	// For Git: repository name or URL
+	// For Terraform: workspace or module name
+	// For Kubernetes: cluster name or context
+	// +optional
+	Namespace string `json:"namespace,omitempty"`
+}
+
 // ToFleetAPI converts CRD ConfigType to Fleet Management API format
 func (c ConfigType) ToFleetAPI() string {
 	switch c {
@@ -56,6 +89,38 @@ func ConfigTypeFromFleetAPI(apiType string) ConfigType {
 		return ConfigTypeAlloy
 	default:
 		return ConfigTypeAlloy
+	}
+}
+
+// ToFleetAPI converts CRD SourceType to Fleet Management API format
+func (s SourceType) ToFleetAPI() string {
+	switch s {
+	case SourceTypeGit:
+		return "SOURCE_TYPE_GIT"
+	case SourceTypeTerraform:
+		return "SOURCE_TYPE_TERRAFORM"
+	case SourceTypeKubernetes:
+		return "SOURCE_TYPE_KUBERNETES"
+	case SourceTypeUnspecified:
+		return "SOURCE_TYPE_UNSPECIFIED"
+	default:
+		return "SOURCE_TYPE_KUBERNETES"
+	}
+}
+
+// SourceTypeFromFleetAPI converts Fleet Management API format to CRD SourceType
+func SourceTypeFromFleetAPI(apiType string) SourceType {
+	switch apiType {
+	case "SOURCE_TYPE_GIT":
+		return SourceTypeGit
+	case "SOURCE_TYPE_TERRAFORM":
+		return SourceTypeTerraform
+	case "SOURCE_TYPE_KUBERNETES":
+		return SourceTypeKubernetes
+	case "SOURCE_TYPE_UNSPECIFIED":
+		return SourceTypeUnspecified
+	default:
+		return SourceTypeUnspecified
 	}
 }
 
@@ -86,6 +151,11 @@ type PipelineSpec struct {
 	// +optional
 	// +kubebuilder:default=Alloy
 	ConfigType ConfigType `json:"configType,omitempty"`
+
+	// Source specifies the origin of the pipeline (Git, Terraform, Kubernetes, etc.)
+	// Used for tracking and grouping pipelines by their source
+	// +optional
+	Source *PipelineSource `json:"source,omitempty"`
 }
 
 // PipelineStatus defines the observed state of Pipeline.

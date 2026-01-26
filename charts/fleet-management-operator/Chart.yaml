@@ -1,0 +1,19 @@
+apiVersion: v2
+name: fleet-management-operator
+description: A Kubernetes operator for managing Grafana Cloud Fleet Management Pipelines
+type: application
+version: 0.1.0
+appVersion: "v0.1.0"
+keywords:
+  - grafana
+  - fleet-management
+  - alloy
+  - opentelemetry
+  - observability
+  - operator
+home: https://github.com/YOUR_USERNAME/fm-crd
+sources:
+  - https://github.com/YOUR_USERNAME/fm-crd
+maintainers:
+  - name: Your Name
+    email: your-email@example.com

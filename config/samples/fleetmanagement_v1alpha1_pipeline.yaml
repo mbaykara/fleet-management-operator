@@ -42,3 +42,9 @@ spec:
 
   # Configuration type (Alloy or OpenTelemetryCollector)
   configType: Alloy
+
+  # Optional: Source of the pipeline for tracking and grouping
+  # If not specified, defaults to Kubernetes with namespace/name
+  source:
+    type: Git
+    namespace: github.com/myorg/alloy-configs

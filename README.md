@@ -1,27 +1,28 @@
-# Fleet Management Pipeline CRD
+# Fleet Management Operator
 
-A Kubernetes Custom Resource Definition (CRD) and controller for managing [Grafana Cloud Fleet Management](https://grafana.com/docs/grafana-cloud/send-data/fleet-management/) Pipelines as native Kubernetes resources.
+A Kubernetes operator for managing [Grafana Cloud Fleet Management](https://grafana.com/docs/grafana-cloud/send-data/fleet-management/) Pipelines as native Kubernetes resources.
 
 ## Overview
 
-This project enables declarative management of Fleet Management configuration pipelines using Kubernetes. Define your Alloy or OpenTelemetry Collector configurations as Kubernetes resources, and the controller automatically syncs them to Grafana Cloud Fleet Management.
+This operator enables declarative management of Fleet Management configuration pipelines using Kubernetes. Define your Alloy or OpenTelemetry Collector configurations as Kubernetes resources, and the operator automatically syncs them to Grafana Cloud Fleet Management.
 
 ### Features
 
-- ✅ **Declarative Pipeline Management**: Define pipelines as Kubernetes resources
-- ✅ **Dual Config Support**: Both Grafana Alloy and OpenTelemetry Collector configurations
-- ✅ **GitOps Friendly**: Manage pipelines through version control
-- ✅ **Production Ready**: Full reconciliation logic with error handling and retry strategies
-- ✅ **Status Tracking**: Pipeline status reflects Fleet Management state with conditions
-- ✅ **Finalizer Protection**: Proper cleanup when pipelines are deleted
+- **Declarative Pipeline Management**: Define pipelines as Kubernetes resources
+- **Dual Config Support**: Both Grafana Alloy and OpenTelemetry Collector configurations
+- **Source Tracking**: Track pipeline origins (Git, Terraform, Kubernetes)
+- **Multi-Architecture Support**: Docker images for linux/amd64 and linux/arm64
+- **GitOps Friendly**: Manage pipelines through version control
+- **Status Tracking**: Pipeline status reflects Fleet Management state with conditions
+- **Finalizer Protection**: Proper cleanup when pipelines are deleted
+- **Helm Chart**: Easy installation and configuration
+- **Leader Election**: High availability support with multiple replicas
 
 ## Prerequisites
 
-- Go version v1.24.6+
-- Docker version 17.03+
-- kubectl version v1.11.3+
-- Access to a Kubernetes v1.11.3+ cluster
-- **Grafana Cloud Fleet Management credentials** (base URL, username, password)
+- Kubernetes v1.11.3+ cluster
+- Helm 3.0+ (for Helm installation)
+- **Grafana Cloud Fleet Management credentials** (base URL, username, password/token)
 
 ## Quick Start
 
@@ -31,6 +32,12 @@ This project enables declarative management of Fleet Management configuration pi
 export FLEET_MANAGEMENT_BASE_URL="https://fleet-management-<CLUSTER>.grafana.net/pipeline.v1.PipelineService/"
 export FLEET_MANAGEMENT_USERNAME="your-username"
 export FLEET_MANAGEMENT_PASSWORD="your-password-or-token"
+#or
+kubectl create secret generic fleet-management-credentials \
+  -n fleet-management-system \
+  --from-literal=base-url='https://fleet-management-prod-001.grafana.net/pipeline.v1.PipelineService/' \
+  --from-literal=username='12345' \
+  --from-literal=password='glc_xxxxxxxxxxxxx'
 ```
 
 Get these from your Grafana Cloud Fleet Management interface:

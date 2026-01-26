@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-while :; do cat CLAUDE.md | claude ; done
+Never ever use emojis in the code base and documentation except alloy or OTel icon.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 

@@ -23,6 +23,7 @@ import (
 	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -194,6 +195,20 @@ func (r *PipelineReconciler) buildUpsertRequest(pipeline *fleetmanagementv1alpha
 		ConfigType: pipeline.Spec.ConfigType.ToFleetAPI(),
 	}
 
+	// Add source if specified, otherwise default to Kubernetes
+	if pipeline.Spec.Source != nil {
+		fleetPipeline.Source = &fleetclient.Source{
+			Type:      pipeline.Spec.Source.Type.ToFleetAPI(),
+			Namespace: pipeline.Spec.Source.Namespace,
+		}
+	} else {
+		// Default to Kubernetes source
+		fleetPipeline.Source = &fleetclient.Source{
+			Type:      fleetmanagementv1alpha1.SourceTypeKubernetes.ToFleetAPI(),
+			Namespace: fmt.Sprintf("%s/%s", pipeline.Namespace, pipeline.Name),
+		}
+	}
+
 	// Note: ID should NOT be included in UpsertPipeline requests.
 	// The API uses pipeline name for idempotency and assigns/returns the ID.
 
@@ -254,7 +269,7 @@ func (r *PipelineReconciler) updateStatusSuccess(ctx context.Context, pipeline *
 	}
 
 	// Set Ready condition
-	setCondition(pipeline, metav1.Condition{
+	meta.SetStatusCondition(&pipeline.Status.Conditions, metav1.Condition{
 		Type:               conditionTypeReady,
 		Status:             metav1.ConditionTrue,
 		Reason:             reasonSynced,
@@ -263,7 +278,7 @@ func (r *PipelineReconciler) updateStatusSuccess(ctx context.Context, pipeline *
 	})
 
 	// Set Synced condition
-	setCondition(pipeline, metav1.Condition{
+	meta.SetStatusCondition(&pipeline.Status.Conditions, metav1.Condition{
 		Type:               conditionTypeSynced,
 		Status:             metav1.ConditionTrue,
 		Reason:             reasonSynced,
@@ -294,7 +309,7 @@ func (r *PipelineReconciler) updateStatusError(ctx context.Context, pipeline *fl
 	pipeline.Status.ObservedGeneration = pipeline.Generation
 
 	// Set Ready condition to False
-	setCondition(pipeline, metav1.Condition{
+	meta.SetStatusCondition(&pipeline.Status.Conditions, metav1.Condition{
 		Type:               conditionTypeReady,
 		Status:             metav1.ConditionFalse,
 		Reason:             reason,
@@ -303,7 +318,7 @@ func (r *PipelineReconciler) updateStatusError(ctx context.Context, pipeline *fl
 	})
 
 	// Set Synced condition to False
-	setCondition(pipeline, metav1.Condition{
+	meta.SetStatusCondition(&pipeline.Status.Conditions, metav1.Condition{
 		Type:               conditionTypeSynced,
 		Status:             metav1.ConditionFalse,
 		Reason:             reason,
@@ -329,31 +344,6 @@ func (r *PipelineReconciler) updateStatusError(ctx context.Context, pipeline *fl
 
 	// For other errors, return error for exponential backoff
 	return ctrl.Result{}, err
-}
-
-// setCondition sets or updates a condition in the pipeline status
-func setCondition(pipeline *fleetmanagementv1alpha1.Pipeline, condition metav1.Condition) {
-	// Set LastTransitionTime
-	condition.LastTransitionTime = metav1.Now()
-
-	// Find existing condition
-	for i, existingCondition := range pipeline.Status.Conditions {
-		if existingCondition.Type == condition.Type {
-			// Check if status actually changed
-			if existingCondition.Status != condition.Status {
-				// Status changed, update LastTransitionTime
-				pipeline.Status.Conditions[i] = condition
-			} else {
-				// Status didn't change, preserve LastTransitionTime
-				condition.LastTransitionTime = existingCondition.LastTransitionTime
-				pipeline.Status.Conditions[i] = condition
-			}
-			return
-		}
-	}
-
-	// Condition doesn't exist, append it
-	pipeline.Status.Conditions = append(pipeline.Status.Conditions, condition)
 }
 
 // SetupWithManager sets up the controller with the Manager.

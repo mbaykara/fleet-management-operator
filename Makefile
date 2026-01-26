@@ -1,5 +1,5 @@
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= fleet-management-operator:latest
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -112,33 +112,60 @@ build: manifests generate fmt vet ## Build manager binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./cmd/main.go
 
-# If you wish to build the manager image targeting other platforms you can use the --platform flag.
-# (i.e. docker build --platform linux/arm64). However, you must enable docker buildKit for it.
-# More info: https://docs.docker.com/develop/develop-images/build_enhancements/
-.PHONY: docker-build
-docker-build: ## Build docker image with the manager.
-	$(CONTAINER_TOOL) build -t ${IMG} .
-
-.PHONY: docker-push
-docker-push: ## Push docker image with the manager.
-	$(CONTAINER_TOOL) push ${IMG}
-
 # PLATFORMS defines the target platforms for the manager image be built to provide support to multiple
-# architectures. (i.e. make docker-buildx IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
+# architectures. (i.e. make docker-build IMG=myregistry/myoperator:0.0.1). To use this option you need to:
 # - be able to use docker buildx. More info: https://docs.docker.com/build/buildx/
 # - have enabled BuildKit. More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 # - be able to push the image to your registry (i.e. if you do not set a valid value via IMG=<myregistry/image:<tag>> then the export will fail)
 # To adequately provide solutions that are compatible with multiple platforms, you should consider using this option.
-PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
+PLATFORMS ?= linux/arm64,linux/amd64
+
+# BUILDER_NAME is the name of the buildx builder instance
+BUILDER_NAME ?= fm-crd-builder
+
+.PHONY: docker-buildx-setup
+docker-buildx-setup: ## Set up docker buildx builder for multi-arch builds
+	@if ! $(CONTAINER_TOOL) buildx ls | grep -q $(BUILDER_NAME); then \
+		echo "Creating buildx builder $(BUILDER_NAME)..."; \
+		$(CONTAINER_TOOL) buildx create --name $(BUILDER_NAME) --driver docker-container --bootstrap --use; \
+	else \
+		echo "Buildx builder $(BUILDER_NAME) already exists"; \
+		$(CONTAINER_TOOL) buildx use $(BUILDER_NAME); \
+	fi
+
+.PHONY: docker-buildx-remove
+docker-buildx-remove: ## Remove docker buildx builder
+	@if $(CONTAINER_TOOL) buildx ls | grep -q $(BUILDER_NAME); then \
+		echo "Removing buildx builder $(BUILDER_NAME)..."; \
+		$(CONTAINER_TOOL) buildx rm $(BUILDER_NAME); \
+	else \
+		echo "Buildx builder $(BUILDER_NAME) does not exist"; \
+	fi
+
+.PHONY: docker-build
+docker-build: docker-buildx-setup ## Build and push docker image for multiple architectures
+	$(CONTAINER_TOOL) buildx build \
+		--builder $(BUILDER_NAME) \
+		--platform=$(PLATFORMS) \
+		--tag ${IMG} \
+		--push \
+		.
+
+.PHONY: docker-build-load
+docker-build-load: ## Build docker image for local architecture and load into docker
+	$(CONTAINER_TOOL) buildx build \
+		--tag ${IMG} \
+		--load \
+		.
+
+.PHONY: docker-push
+docker-push: ## Push docker image with the manager (alias for docker-build)
+	@echo "Note: docker-build now pushes multi-arch images by default"
+	$(MAKE) docker-build
+
+# Legacy target for backward compatibility
 .PHONY: docker-buildx
-docker-buildx: ## Build and push docker image for the manager for cross-platform support
-	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
-	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' Dockerfile > Dockerfile.cross
-	- $(CONTAINER_TOOL) buildx create --name fm-crd-builder
-	$(CONTAINER_TOOL) buildx use fm-crd-builder
-	- $(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${IMG} -f Dockerfile.cross .
-	- $(CONTAINER_TOOL) buildx rm fm-crd-builder
-	rm Dockerfile.cross
+docker-buildx: docker-build ## Build and push docker image for the manager for cross-platform support (deprecated, use docker-build)
 
 .PHONY: build-installer
 build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.

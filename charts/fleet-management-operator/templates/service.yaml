@@ -1,0 +1,21 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "fleet-management-operator.fullname" . }}-metrics
+  labels:
+    {{- include "fleet-management-operator.labels" . | nindent 4 }}
+  {{- with .Values.metrics.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.metrics.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.metrics.service.port }}
+    targetPort: {{ .Values.metrics.port }}
+    protocol: TCP
+  selector:
+    {{- include "fleet-management-operator.selectorLabels" . | nindent 4 }}
+{{- end }}

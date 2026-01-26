@@ -53,3 +53,8 @@ spec:
 
   # Must specify OpenTelemetryCollector for OTEL config
   configType: OpenTelemetryCollector
+
+  # Optional: Source of the pipeline for tracking and grouping
+  source:
+    type: Terraform
+    namespace: production-workspace

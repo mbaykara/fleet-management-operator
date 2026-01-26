@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fleet-management-operator.fullname" . }}
+  labels:
+    {{- include "fleet-management-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "fleet-management-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "fleet-management-operator.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "fleet-management-operator.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+      - name: manager
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - /manager
+        args:
+        {{- if .Values.leaderElection.enabled }}
+        - --leader-elect
+        {{- end }}
+        - --health-probe-bind-address=:{{ .Values.healthProbe.port }}
+        env:
+        - name: FLEET_MANAGEMENT_BASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "fleet-management-operator.secretName" . }}
+              key: {{ .Values.fleetManagement.existingSecretKeys.baseUrl }}
+        - name: FLEET_MANAGEMENT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "fleet-management-operator.secretName" . }}
+              key: {{ .Values.fleetManagement.existingSecretKeys.username }}
+        - name: FLEET_MANAGEMENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "fleet-management-operator.secretName" . }}
+              key: {{ .Values.fleetManagement.existingSecretKeys.password }}
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.healthProbe.port }}
+          initialDelaySeconds: {{ .Values.healthProbe.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthProbe.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthProbe.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthProbe.liveness.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: {{ .Values.healthProbe.port }}
+          initialDelaySeconds: {{ .Values.healthProbe.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.healthProbe.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.healthProbe.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.healthProbe.readiness.failureThreshold }}
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: 10

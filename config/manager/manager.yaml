@@ -5,13 +5,13 @@ metadata:
     control-plane: controller-manager
     app.kubernetes.io/name: fleet-management-operator
     app.kubernetes.io/managed-by: kustomize
-  name: system
+  name: fleet-management-system
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: controller-manager
-  namespace: system
+  namespace: fleet-management-system
   labels:
     control-plane: controller-manager
     app.kubernetes.io/name: fleet-management-operator
@@ -63,8 +63,24 @@ spec:
         args:
           - --leader-elect
           - --health-probe-bind-address=:8081
-        image: controller:latest
+        image: fleet-management-operator:dev-v1.0.0
         name: manager
+        env:
+        - name: FLEET_MANAGEMENT_BASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: fleet-management-credentials
+              key: base-url
+        - name: FLEET_MANAGEMENT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: fleet-management-credentials
+              key: username
+        - name: FLEET_MANAGEMENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: fleet-management-credentials
+              key: password
         ports: []
         securityContext:
           readOnlyRootFilesystem: true

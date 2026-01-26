@@ -1,0 +1,163 @@
+# Default values for fleet-management-operator
+
+# Image configuration
+image:
+  repository: fleet-management-operator
+  pullPolicy: IfNotPresent
+  tag: "dev-v1.0.0"
+
+# Image pull secrets for private registries
+imagePullSecrets: []
+# - name: regcred
+
+# Override the chart name
+nameOverride: ""
+fullnameOverride: ""
+
+# Number of operator replicas (only 1 should be active due to leader election)
+replicaCount: 1
+
+# Fleet Management API credentials
+# These can be provided via values or existingSecret
+fleetManagement:
+  # Base URL for Fleet Management API
+  # Example: https://fleet-management-prod-011.grafana.net/pipeline.v1.PipelineService/
+  baseUrl: ""
+
+  # Grafana Cloud Stack ID
+  username: ""
+
+  # Grafana Cloud API token
+  password: ""
+
+  # Use existing secret instead of creating one
+  # If set, baseUrl, username, and password are ignored
+  existingSecret: ""
+
+  # Keys in the existing secret
+  existingSecretKeys:
+    baseUrl: base-url
+    username: username
+    password: password
+
+# Service Account configuration
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod labels
+podLabels: {}
+
+# Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+# Container security context
+securityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - "ALL"
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+# Leader election configuration
+leaderElection:
+  enabled: true
+  # Lease duration
+  leaseDuration: 15s
+  # Renew deadline
+  renewDeadline: 10s
+  # Retry period
+  retryPeriod: 2s
+
+# Health probe configuration
+healthProbe:
+  # Port for health probes
+  port: 8081
+  # Liveness probe configuration
+  liveness:
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 1
+    failureThreshold: 3
+  # Readiness probe configuration
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+
+# Metrics configuration
+metrics:
+  # Enable metrics endpoint
+  enabled: true
+  # Port for metrics
+  port: 8080
+  # Service for metrics
+  service:
+    # Service type
+    type: ClusterIP
+    # Service port
+    port: 8080
+    # Service annotations
+    annotations: {}
+    # ServiceMonitor for Prometheus Operator
+    serviceMonitor:
+      enabled: false
+      # Additional labels for ServiceMonitor
+      additionalLabels: {}
+      # Scrape interval
+      interval: 30s
+      # Scrape timeout
+      scrapeTimeout: 10s
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity rules
+affinity: {}
+
+# Priority class name
+priorityClassName: ""
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# RBAC configuration
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+# CRD installation
+crds:
+  # Install CRDs as part of the chart
+  install: true
+  # Keep CRDs on chart uninstall
+  keep: true

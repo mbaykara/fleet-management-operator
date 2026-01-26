@@ -1,0 +1,60 @@
+# Example values file for Fleet Management Operator
+# Copy this file and customize for your environment
+
+image:
+  # Update with your container registry
+  repository: ghcr.io/YOUR_USERNAME/fleet-management-operator
+  tag: v0.1.0
+  pullPolicy: IfNotPresent
+
+# Fleet Management API Configuration
+# REQUIRED: Configure these with your Grafana Cloud credentials
+fleetManagement:
+  # Replace with your Fleet Management cluster URL
+  baseUrl: "https://fleet-management-prod-011.grafana.net/pipeline.v1.PipelineService/"
+
+  # Replace with your Grafana Cloud Stack ID
+  username: "1240296"
+
+  # Replace with your Grafana Cloud API Token
+  # Create token at: https://grafana.com/orgs/<your-org>/api-keys
+  password: "glc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Resource Configuration
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+# Enable metrics and Prometheus integration
+metrics:
+  enabled: true
+  service:
+    serviceMonitor:
+      # Set to true if using Prometheus Operator
+      enabled: false
+      interval: 30s
+      additionalLabels:
+        prometheus: kube-prometheus
+
+# Leader Election (recommended for HA)
+leaderElection:
+  enabled: true
+
+# Optional: High Availability Configuration
+# replicaCount: 2
+# podDisruptionBudget:
+#   enabled: true
+#   minAvailable: 1
+# affinity:
+#   podAntiAffinity:
+#     preferredDuringSchedulingIgnoredDuringExecution:
+#     - weight: 100
+#       podAffinityTerm:
+#         labelSelector:
+#           matchLabels:
+#             app.kubernetes.io/name: fleet-management-operator
+#         topologyKey: kubernetes.io/hostname

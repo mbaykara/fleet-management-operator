@@ -23,6 +23,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -134,6 +135,12 @@ var _ = Describe("Pipeline Controller", func() {
 			err := k8sClient.Get(ctx, typeNamespacedName, pipeline)
 			if err == nil {
 				Expect(k8sClient.Delete(ctx, pipeline)).To(Succeed())
+
+				// Wait for pipeline to be fully deleted
+				Eventually(func() bool {
+					err := k8sClient.Get(ctx, typeNamespacedName, pipeline)
+					return err != nil && errors.IsNotFound(err)
+				}, timeout, interval).Should(BeTrue())
 			}
 		})
 

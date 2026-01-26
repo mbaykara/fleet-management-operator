@@ -11,7 +11,6 @@ This operator enables declarative management of Fleet Management configuration p
 - **Declarative Pipeline Management**: Define pipelines as Kubernetes resources
 - **Dual Config Support**: Both Grafana Alloy and OpenTelemetry Collector configurations
 - **Source Tracking**: Track pipeline origins (Git, Terraform, Kubernetes)
-- **Multi-Architecture Support**: Docker images for linux/amd64 and linux/arm64
 - **GitOps Friendly**: Manage pipelines through version control
 - **Status Tracking**: Pipeline status reflects Fleet Management state with conditions
 - **High Availability**: Leader election support for multiple replicas
@@ -19,9 +18,6 @@ This operator enables declarative management of Fleet Management configuration p
 ## Installation
 
 ### Prerequisites
-
-- Kubernetes v1.11.3+ cluster
-- Helm 3.0+ (for Helm installation)
 - Grafana Cloud Fleet Management credentials (base URL, username, password/token)
 
 Get credentials from your Grafana Cloud Fleet Management interface:

@@ -20,8 +20,8 @@ This operator enables declarative management of Fleet Management configuration p
 
 ## Prerequisites
 
-- Kubernetes v1.11.3+ cluster
-- Helm 3.0+ (for Helm installation)
+- Kubernetes v1.32.3+ cluster
+- Helm 4.0+ (for Helm installation)
 - **Grafana Cloud Fleet Management credentials** (base URL, username, password/token)
 
 ## Quick Start

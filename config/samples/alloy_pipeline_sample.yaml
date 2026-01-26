@@ -4,7 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/name: fleet-management-operator
     app.kubernetes.io/managed-by: kustomize
-  name: pipeline-sample
+  name: alloy-pipeline-sample
 spec:
   # Override with valid Alloy identifier (no hyphens)
   name: pipeline_sample
@@ -42,9 +42,6 @@ spec:
 
   # Configuration type (Alloy or OpenTelemetryCollector)
   configType: Alloy
-
-  # Optional: Source of the pipeline for tracking and grouping
-  # If not specified, defaults to Kubernetes with namespace/name
   source:
     type: Git
-    namespace: github.com/myorg/alloy-configs
+    namespace: github.com/mbaykara/alloy-configs

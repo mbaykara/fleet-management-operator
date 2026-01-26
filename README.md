@@ -2,6 +2,8 @@
 
 A Kubernetes operator for managing [Grafana Cloud Fleet Management](https://grafana.com/docs/grafana-cloud/send-data/fleet-management/) Pipelines as native Kubernetes resources.
 
+> **Disclaimer**: This is not an official Grafana Labs product and is not officially supported by Grafana Labs. This is a community project provided as-is. For official Grafana Cloud Fleet Management support, please contact [Grafana Support](https://grafana.com/support/).
+
 ## Overview
 
 This operator enables declarative management of Fleet Management configuration pipelines using Kubernetes. Define your Alloy or OpenTelemetry Collector configurations as Kubernetes resources, and the operator automatically syncs them to Grafana Cloud Fleet Management.

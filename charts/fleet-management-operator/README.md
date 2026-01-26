@@ -22,7 +22,7 @@ helm repo update
 helm install fleet-management-operator fm-operator/fleet-management-operator \
   --namespace fleet-management-system \
   --create-namespace \
-  --set fleetManagement.baseUrl='https://fleet-management-prod-011.grafana.net/pipeline.v1.PipelineService/' \
+  --set fleetManagement.baseUrl='https://fleet-management-prod-us-central-0.grafana.net/pipeline.v1.PipelineService/' \
   --set fleetManagement.username='YOUR_STACK_ID' \
   --set fleetManagement.password='YOUR_GRAFANA_CLOUD_TOKEN'
 ```
@@ -35,8 +35,8 @@ cd charts/fleet-management-operator
 helm install fleet-management-operator . \
   --namespace fleet-management-system \
   --create-namespace \
-  --set fleetManagement.baseUrl='https://fleet-management-prod-011.grafana.net/pipeline.v1.PipelineService/' \
-  --set fleetManagement.username='1240296' \
+  --set fleetManagement.baseUrl='https://fleet-management-prod-us-central-0.grafana.net/pipeline.v1.PipelineService/' \
+  --set fleetManagement.username='12345' \
   --set fleetManagement.password='glc_xxxxx'
 ```
 
@@ -50,8 +50,8 @@ image:
   tag: v0.1.0
 
 fleetManagement:
-  baseUrl: https://fleet-management-prod-011.grafana.net/pipeline.v1.PipelineService/
-  username: "1240296"
+  baseUrl: https://fleet-management-prod-us-central-0.grafana.net/pipeline.v1.PipelineService/
+  username: "12345"
   password: "glc_xxxxx"
 
 resources:
@@ -85,8 +85,8 @@ If you already have a secret with Fleet Management credentials:
 ```bash
 kubectl create secret generic my-fleet-credentials \
   -n fleet-management-system \
-  --from-literal=base-url='https://fleet-management-prod-011.grafana.net/pipeline.v1.PipelineService/' \
-  --from-literal=username='1240296' \
+  --from-literal=base-url='https://fleet-management-prod-us-central-0.grafana.net/pipeline.v1.PipelineService/' \
+  --from-literal=username='12345' \
   --from-literal=password='glc_xxxxx'
 
 helm install fleet-management-operator . \

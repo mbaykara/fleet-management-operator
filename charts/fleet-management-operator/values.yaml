@@ -21,7 +21,7 @@ replicaCount: 1
 # These can be provided via values or existingSecret
 fleetManagement:
   # Base URL for Fleet Management API
-  # Example: https://fleet-management-prod-011.grafana.net/pipeline.v1.PipelineService/
+  # Example: https://fleet-management-prod-us-central-0.grafana.net/pipeline.v1.PipelineService/
   baseUrl: ""
 
   # Grafana Cloud Stack ID

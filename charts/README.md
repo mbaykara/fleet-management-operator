@@ -44,7 +44,7 @@ helm repo update
 helm install fleet-management-operator fm-operator/fleet-management-operator \
   --namespace fleet-management-system \
   --create-namespace \
-  --set fleetManagement.baseUrl='https://fleet-management-prod-011.grafana.net/pipeline.v1.PipelineService/' \
+  --set fleetManagement.baseUrl='https://fleet-management-prod-us-central-0.grafana.net/pipeline.v1.PipelineService/' \
   --set fleetManagement.username='YOUR_STACK_ID' \
   --set fleetManagement.password='YOUR_TOKEN'
 ```

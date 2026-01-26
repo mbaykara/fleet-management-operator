@@ -11,10 +11,10 @@ image:
 # REQUIRED: Configure these with your Grafana Cloud credentials
 fleetManagement:
   # Replace with your Fleet Management cluster URL
-  baseUrl: "https://fleet-management-prod-011.grafana.net/pipeline.v1.PipelineService/"
+  baseUrl: "https://fleet-management-prod-us-central-0.grafana.net/pipeline.v1.PipelineService/"
 
   # Replace with your Grafana Cloud Stack ID
-  username: "1240296"
+  username: "12345"
 
   # Replace with your Grafana Cloud API Token
   # Create token at: https://grafana.com/orgs/<your-org>/api-keys

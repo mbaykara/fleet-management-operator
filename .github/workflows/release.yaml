@@ -134,53 +134,6 @@ jobs:
           name: helm-chart
           path: charts/
 
-      - name: Generate release notes
-        id: notes
-        run: |
-          cat > release-notes.md <<EOF
-          ## Fleet Management Operator ${{ github.ref_name }}
-
-          ### Container Images
-
-          Multi-architecture images (linux/amd64, linux/arm64):
-          \`\`\`
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.image-tag }}
-          \`\`\`
-
-          ### Helm Chart
-
-          Install with Helm:
-          \`\`\`bash
-          helm install fleet-management-operator \\
-            https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/fleet-management-operator-*.tgz \\
-            --namespace fleet-management-system \\
-            --create-namespace \\
-            --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \\
-            --set image.tag=${{ needs.build-and-push.outputs.image-tag }} \\
-            --set fleetManagement.baseUrl='YOUR_FLEET_MGMT_URL' \\
-            --set fleetManagement.username='YOUR_STACK_ID' \\
-            --set fleetManagement.password='YOUR_TOKEN'
-          \`\`\`
-
-          ### Kubernetes Manifests
-
-          Install with kubectl:
-          \`\`\`bash
-          kubectl apply -f https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/install.yaml
-          \`\`\`
-
-          ### What's Changed
-
-          EOF
-
-          # Get commits since last tag
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          if [ -n "$PREVIOUS_TAG" ]; then
-            git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" >> release-notes.md
-          else
-            echo "Initial release" >> release-notes.md
-          fi
-
       - name: Generate install.yaml
         run: |
           make build-installer IMG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.image-tag }}
@@ -189,7 +142,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: release-notes.md
+          generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
           files: |

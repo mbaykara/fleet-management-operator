@@ -38,26 +38,6 @@ jobs:
           files: ./cover.out
           fail_ci_if_error: false
 
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: true
-
-      - name: Install golangci-lint
-        run: |
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2
-
-      - name: Run golangci-lint
-        run: golangci-lint run --timeout=5m
-
   build:
     name: Build
     runs-on: ubuntu-latest

@@ -35,6 +35,12 @@ const (
 	ConfigTypeOpenTelemetryCollector ConfigType = "OpenTelemetryCollector"
 )
 
+// Fleet Management API constants for ConfigType
+const (
+	fleetAPIConfigTypeAlloy = "CONFIG_TYPE_ALLOY"
+	fleetAPIConfigTypeOTEL  = "CONFIG_TYPE_OTEL"
+)
+
 // SourceType represents the origin source of the pipeline
 // +kubebuilder:validation:Enum=Git;Terraform;Kubernetes;Unspecified
 type SourceType string
@@ -51,6 +57,14 @@ const (
 
 	// SourceTypeUnspecified indicates pipeline source is not specified
 	SourceTypeUnspecified SourceType = "Unspecified"
+)
+
+// Fleet Management API constants for SourceType
+const (
+	fleetAPISourceTypeGit         = "SOURCE_TYPE_GIT"
+	fleetAPISourceTypeTerraform   = "SOURCE_TYPE_TERRAFORM"
+	fleetAPISourceTypeKubernetes  = "SOURCE_TYPE_KUBERNETES"
+	fleetAPISourceTypeUnspecified = "SOURCE_TYPE_UNSPECIFIED"
 )
 
 // PipelineSource defines the origin source of the pipeline
@@ -72,20 +86,20 @@ type PipelineSource struct {
 func (c ConfigType) ToFleetAPI() string {
 	switch c {
 	case ConfigTypeAlloy:
-		return "CONFIG_TYPE_ALLOY"
+		return fleetAPIConfigTypeAlloy
 	case ConfigTypeOpenTelemetryCollector:
-		return "CONFIG_TYPE_OTEL"
+		return fleetAPIConfigTypeOTEL
 	default:
-		return "CONFIG_TYPE_ALLOY"
+		return fleetAPIConfigTypeAlloy
 	}
 }
 
 // ConfigTypeFromFleetAPI converts Fleet Management API format to CRD ConfigType
 func ConfigTypeFromFleetAPI(apiType string) ConfigType {
 	switch apiType {
-	case "CONFIG_TYPE_OTEL":
+	case fleetAPIConfigTypeOTEL:
 		return ConfigTypeOpenTelemetryCollector
-	case "CONFIG_TYPE_ALLOY":
+	case fleetAPIConfigTypeAlloy:
 		return ConfigTypeAlloy
 	default:
 		return ConfigTypeAlloy
@@ -96,15 +110,15 @@ func ConfigTypeFromFleetAPI(apiType string) ConfigType {
 func (s SourceType) ToFleetAPI() string {
 	switch s {
 	case SourceTypeGit:
-		return "SOURCE_TYPE_GIT"
+		return fleetAPISourceTypeGit
 	case SourceTypeTerraform:
-		return "SOURCE_TYPE_TERRAFORM"
+		return fleetAPISourceTypeTerraform
 	case SourceTypeKubernetes:
-		return "SOURCE_TYPE_KUBERNETES"
+		return fleetAPISourceTypeKubernetes
 	case SourceTypeUnspecified:
-		return "SOURCE_TYPE_UNSPECIFIED"
+		return fleetAPISourceTypeUnspecified
 	default:
-		return "SOURCE_TYPE_KUBERNETES"
+		return fleetAPISourceTypeKubernetes
 	}
 }
 

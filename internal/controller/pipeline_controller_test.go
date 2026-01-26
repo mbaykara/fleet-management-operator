@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"net/http"
+	"slices"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -26,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	fleetmanagementv1alpha1 "github.com/grafana/fleet-management-operator/api/v1alpha1"
 	"github.com/grafana/fleet-management-operator/pkg/fleetclient"
@@ -166,12 +166,7 @@ var _ = Describe("Pipeline Controller", func() {
 				if err != nil {
 					return false
 				}
-				for _, f := range pipeline.Finalizers {
-					if f == pipelineFinalizer {
-						return true
-					}
-				}
-				return false
+				return slices.Contains(pipeline.Finalizers, pipelineFinalizer)
 			}, timeout, interval).Should(BeTrue())
 
 			By("Checking if status is updated with Fleet Management ID")
@@ -306,8 +301,7 @@ var _ = Describe("Pipeline Controller", func() {
 				},
 			}
 
-			req, err := reconciler.buildUpsertRequest(pipeline)
-			Expect(err).ToNot(HaveOccurred())
+			req := reconciler.buildUpsertRequest(pipeline)
 			Expect(req.Pipeline.Name).To(Equal("test-pipeline"))
 		})
 
@@ -326,8 +320,7 @@ var _ = Describe("Pipeline Controller", func() {
 				},
 			}
 
-			req, err := reconciler.buildUpsertRequest(pipeline)
-			Expect(err).ToNot(HaveOccurred())
+			req := reconciler.buildUpsertRequest(pipeline)
 			Expect(req.Pipeline.Name).To(Equal("custom-pipeline-name"))
 		})
 
@@ -344,8 +337,7 @@ var _ = Describe("Pipeline Controller", func() {
 				},
 			}
 
-			req, err := reconciler.buildUpsertRequest(pipeline)
-			Expect(err).ToNot(HaveOccurred())
+			req := reconciler.buildUpsertRequest(pipeline)
 			Expect(req.Pipeline.ConfigType).To(Equal("CONFIG_TYPE_OTEL"))
 		})
 	})
@@ -405,21 +397,3 @@ var _ = Describe("Pipeline Controller", func() {
 		})
 	})
 })
-
-// Helper function to setup controller with mock client for specific tests
-func setupReconcilerWithMock(mockClient *mockFleetClient) (*PipelineReconciler, reconcile.Request) {
-	reconciler := &PipelineReconciler{
-		Client:      k8sClient,
-		Scheme:      k8sClient.Scheme(),
-		FleetClient: mockClient,
-	}
-
-	req := reconcile.Request{
-		NamespacedName: types.NamespacedName{
-			Name:      "test-pipeline",
-			Namespace: "default",
-		},
-	}
-
-	return reconciler, req
-}

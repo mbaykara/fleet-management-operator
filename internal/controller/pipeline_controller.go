@@ -122,14 +122,8 @@ func (r *PipelineReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 // reconcileNormal handles normal reconciliation (create/update)
 func (r *PipelineReconciler) reconcileNormal(ctx context.Context, pipeline *fleetmanagementv1alpha1.Pipeline) (ctrl.Result, error) {
-	log := logf.FromContext(ctx)
-
 	// Build the upsert request
-	req, err := r.buildUpsertRequest(pipeline)
-	if err != nil {
-		log.Error(err, "failed to build upsert request")
-		return r.updateStatusError(ctx, pipeline, reasonValidationError, err)
-	}
+	req := r.buildUpsertRequest(pipeline)
 
 	// Call Fleet Management API
 	apiPipeline, err := r.FleetClient.UpsertPipeline(ctx, req)
@@ -179,7 +173,7 @@ func (r *PipelineReconciler) reconcileDelete(ctx context.Context, pipeline *flee
 }
 
 // buildUpsertRequest builds an UpsertPipelineRequest from a Pipeline CRD
-func (r *PipelineReconciler) buildUpsertRequest(pipeline *fleetmanagementv1alpha1.Pipeline) (*fleetclient.UpsertPipelineRequest, error) {
+func (r *PipelineReconciler) buildUpsertRequest(pipeline *fleetmanagementv1alpha1.Pipeline) *fleetclient.UpsertPipelineRequest {
 	// Determine pipeline name
 	pipelineName := pipeline.Spec.Name
 	if pipelineName == "" {
@@ -215,7 +209,7 @@ func (r *PipelineReconciler) buildUpsertRequest(pipeline *fleetmanagementv1alpha
 	return &fleetclient.UpsertPipelineRequest{
 		Pipeline:     fleetPipeline,
 		ValidateOnly: false,
-	}, nil
+	}
 }
 
 // handleAPIError handles errors from Fleet Management API

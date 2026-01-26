@@ -80,7 +80,9 @@ func (c *Client) UpsertPipeline(ctx context.Context, req *UpsertPipelineRequest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -124,7 +126,9 @@ func (c *Client) DeletePipeline(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	// 404 is treated as success (pipeline already deleted)
 	if resp.StatusCode == http.StatusNotFound {
